@@ -1,0 +1,182 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MedFlow">
+<title>MedFlow</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:rgba(255,255,255,0.07);--accent:#4f8ef7;--gold:#d4a843;--red:#f87171;--green:#4ade80;--text:#e8eaf0;--muted:#6b7280;--serif:'DM Serif Display',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100svh;overflow-x:hidden;padding-bottom:90px}
+.header{position:sticky;top:0;z-index:100;padding:52px 24px 16px;background:linear-gradient(180deg,var(--bg) 70%,transparent)}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start}
+.greeting{font-family:var(--serif);font-size:28px;line-height:1.1;color:var(--text);letter-spacing:-0.3px}
+.greeting span{color:var(--accent);font-style:italic}
+.date-badge{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:8px 12px;text-align:right}
+.date-badge .day-num{font-family:var(--serif);font-size:22px;line-height:1;color:var(--accent)}
+.date-badge .day-name{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.week-strip{display:flex;gap:6px;padding:16px 24px 0;overflow-x:auto;scrollbar-width:none}
+.week-strip::-webkit-scrollbar{display:none}
+.week-day{flex:0 0 auto;width:46px;height:60px;border-radius:14px;border:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;position:relative}
+.week-day.today{background:var(--accent);border-color:var(--accent)}
+.week-day.has-event::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--gold);position:absolute;bottom:6px}
+.week-day .wd-name{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.week-day.today .wd-name{color:rgba(255,255,255,0.7)}
+.week-day .wd-num{font-family:var(--serif);font-size:18px;color:var(--text)}
+.week-day.today .wd-num{color:white}
+.section-header{display:flex;justify-content:space-between;align-items:center;padding:24px 24px 12px}
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--muted)}
+.section-action{font-size:13px;color:var(--accent);font-weight:500;cursor:pointer;border:none;background:none;padding:0}
+.events-list{padding:0 24px;display:flex;flex-direction:column;gap:10px}
+.event-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform 0.15s,background 0.15s;animation:slideIn 0.3s ease both;position:relative;overflow:hidden}
+.event-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.event-card.type-surgery::before{background:var(--red)}
+.event-card.type-consult::before{background:var(--accent)}
+.event-card.type-meeting::before{background:var(--gold)}
+.event-card.type-personal::before{background:var(--green)}
+.event-card:active{transform:scale(0.98);background:var(--surface2)}
+.event-time-block{min-width:44px;text-align:center}
+.event-time{font-family:var(--serif);font-size:17px;line-height:1;color:var(--text)}
+.event-ampm{font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase}
+.event-divider{width:1px;height:36px;background:var(--border)}
+.event-info{flex:1}
+.event-title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:3px}
+.event-sub{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.event-tag{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;padding:2px 7px;border-radius:6px}
+.tag-surgery{background:rgba(248,113,113,0.15);color:var(--red)}
+.tag-consult{background:rgba(79,142,247,0.15);color:var(--accent)}
+.tag-meeting{background:rgba(212,168,67,0.15);color:var(--gold)}
+.tag-personal{background:rgba(74,222,128,0.15);color:var(--green)}
+.tasks-list{padding:0 24px;display:flex;flex-direction:column;gap:8px}
+.task-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.2s;animation:slideIn 0.3s ease both}
+.task-item:active{transform:scale(0.98)}
+.task-check{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;cursor:pointer;background:transparent}
+.task-check.done{background:var(--accent);border-color:var(--accent)}
+.task-check.done::after{content:'✓';font-size:12px;color:white;font-weight:700}
+.task-body{flex:1}
+.task-title{font-size:14px;font-weight:400;color:var(--text);margin-bottom:2px}
+.task-item.done .task-title{text-decoration:line-through;color:var(--muted)}
+.task-meta{font-size:11px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.priority-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.p-high{background:var(--red)}.p-mid{background:var(--gold)}.p-low{background:var(--green)}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:12px 24px 28px;background:linear-gradient(0deg,var(--bg) 80%,transparent);display:flex;justify-content:space-around;align-items:center}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:8px 16px;border-radius:14px;transition:all 0.2s;border:none;background:none}
+.nav-item.active{background:var(--surface2)}
+.nav-icon{font-size:20px}
+.nav-label{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.nav-item.active .nav-label{color:var(--accent)}
+.fab{position:fixed;bottom:80px;right:24px;width:54px;height:54px;border-radius:18px;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:24px;color:white;box-shadow:0 8px 24px rgba(79,142,247,0.4);transition:transform 0.15s;z-index:99}
+.fab:active{transform:scale(0.92)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:24px 24px 0 0;padding:24px 24px 48px;width:100%;animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px}
+.modal-title{font-family:var(--serif);font-size:22px;margin-bottom:20px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;display:block}
+.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-family:var(--sans);font-size:15px;color:var(--text);outline:none;transition:border-color 0.2s}
+.form-input:focus{border-color:var(--accent)}
+.type-selector{display:flex;gap:8px;flex-wrap:wrap}
+.type-btn{flex:1;min-width:70px;padding:10px 8px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s;font-family:var(--sans);text-align:center}
+.type-btn.sel-surgery{border-color:var(--red);color:var(--red);background:rgba(248,113,113,0.1)}
+.type-btn.sel-consult{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,0.1)}
+.type-btn.sel-meeting{border-color:var(--gold);color:var(--gold);background:rgba(212,168,67,0.1)}
+.type-btn.sel-personal{border-color:var(--green);color:var(--green);background:rgba(74,222,128,0.1)}
+.save-btn{width:100%;padding:15px;border-radius:14px;background:var(--accent);border:none;color:white;font-family:var(--sans);font-size:16px;font-weight:600;cursor:pointer;margin-top:20px;transition:opacity 0.2s}
+.month-view{display:none;padding:24px}
+.month-view.active{display:block}
+.month-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.month-title{font-family:var(--serif);font-size:24px}
+.month-nav{display:flex;gap:8px}
+.month-nav button{width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:16px;cursor:pointer}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dname{text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding:6px 0}
+.cal-day{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:14px;position:relative;border:1px solid transparent}
+.cal-day.today{background:var(--accent);color:white;font-weight:600}
+.cal-day.other-month{opacity:0.25}
+.cal-day.has-ev::after{content:'';width:4px;height:4px;border-radius:50%;background:var(--gold);position:absolute;bottom:3px}
+.cal-day.today.has-ev::after{background:white}
+.stats-row{display:flex;gap:10px;padding:16px 24px 0}
+.stat-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px}
+.stat-num{font-family:var(--serif);font-size:26px;color:var(--accent);line-height:1}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;font-weight:500}
+.empty-state{text-align:center;padding:32px;color:var(--muted);font-size:14px}
+.empty-state .emoji{font-size:32px;display:block;margin-bottom:10px}
+.tab-view{display:none}
+.tab-view.active{display:block}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+</style></head><body><div class="header"><div class="header-top"><div><div class="greeting">Bom dia, <span id="greeting-name">Dr.</span></div><div style="font-size:13px;color:var(--muted);margin-top:4px;" id="full-date"></div></div><div class="date-badge"><div class="day-num" id="day-num"></div><div class="day-name" id="day-name"></div></div></div></div>
+<div id="view-home" class="tab-view active">
+<div class="week-strip" id="week-strip"></div>
+<div class="stats-row"><div class="stat-card"><div class="stat-num" id="stat-today">0</div><div class="stat-label">Hoje</div></div><div class="stat-card"><div class="stat-num" id="stat-week">0</div><div class="stat-label">Semana</div></div><div class="stat-card"><div class="stat-num" id="stat-tasks">0</div><div class="stat-label">Tarefas</div></div></div>
+<div class="section-header"><div class="section-title">Próximos Compromissos</div><button class="section-action" onclick="switchTab('agenda')">Ver tudo</button></div>
+<div class="events-list" id="home-events"></div>
+<div class="section-header"><div class="section-title">Tarefas Pendentes</div><button class="section-action" onclick="switchTab('tasks')">Ver tudo</button></div>
+<div class="tasks-list" id="home-tasks"></div>
+</div>
+<div id="view-agenda" class="tab-view"><div class="section-header" style="padding-top:16px;"><div class="section-title">Todos os Compromissos</div></div><div class="events-list" id="all-events"></div></div>
+<div id="view-calendar" class="tab-view"><div class="month-view active" id="month-view"><div class="month-header"><div class="month-title" id="month-title"></div><div class="month-nav"><button onclick="changeMonth(-1)">‹</button><button onclick="changeMonth(1)">›</button></div></div><div class="cal-grid" id="cal-grid"></div><div style="margin-top:20px;"><div class="section-header" style="padding:0 0 12px;"><div class="section-title" id="selected-day-label">Dia selecionado</div></div><div class="events-list" id="day-events"></div></div></div></div>
+<div id="view-tasks" class="tab-view"><div class="section-header" style="padding-top:16px;"><div class="section-title">Todas as Tarefas</div></div><div class="tasks-list" id="all-tasks"></div></div>
+<div class="bottom-nav">
+<button class="nav-item active" onclick="switchTab('home')" id="nav-home"><span class="nav-icon">⌂</span><span class="nav-label">Início</span></button>
+<button class="nav-item" onclick="switchTab('agenda')" id="nav-agenda"><span class="nav-icon">◷</span><span class="nav-label">Agenda</span></button>
+<button class="nav-item" onclick="switchTab('calendar')" id="nav-calendar"><span class="nav-icon">▦</span><span class="nav-label">Mês</span></button>
+<button class="nav-item" onclick="switchTab('tasks')" id="nav-tasks"><span class="nav-icon">✓</span><span class="nav-label">Tarefas</span></button>
+</div>
+<button class="fab" onclick="openModal()">+</button>
+<div class="modal-overlay" id="modal" onclick="closeModalOnBg(event)"><div class="modal"><div class="modal-handle"></div><div class="modal-title">Novo item</div>
+<div style="display:flex;gap:8px;margin-bottom:18px;"><button style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--accent);background:rgba(79,142,247,0.15);color:var(--accent);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;" onclick="setModalMode('event')" id="mode-event">Compromisso</button><button style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;" onclick="setModalMode('task')" id="mode-task">Tarefa</button></div>
+<div id="event-fields"><div class="form-group"><label class="form-label">Título</label><input class="form-input" id="ev-title" placeholder="Ex: Cirurgia LCA – Paciente João" type="text"></div><div class="form-group"><label class="form-label">Tipo</label><div class="type-selector"><button class="type-btn sel-surgery" onclick="selectType('surgery')" id="t-surgery">🔪 Cirurgia</button><button class="type-btn" onclick="selectType('consult')" id="t-consult">🩺 Consulta</button><button class="type-btn" onclick="selectType('meeting')" id="t-meeting">📋 Reunião</button><button class="type-btn" onclick="selectType('personal')" id="t-personal">⭐ Pessoal</button></div></div><div style="display:flex;gap:10px;"><div class="form-group" style="flex:1"><label class="form-label">Data</label><input class="form-input" id="ev-date" type="date"></div><div class="form-group" style="flex:1"><label class="form-label">Horário</label><input class="form-input" id="ev-time" type="time"></div></div><div class="form-group"><label class="form-label">Local / Observação</label><input class="form-input" id="ev-location" placeholder="Hospital, sala, paciente..." type="text"></div></div>
+<div id="task-fields" style="display:none;"><div class="form-group"><label class="form-label">Tarefa</label><input class="form-input" id="tk-title" placeholder="Ex: Revisar prontuários" type="text"></div><div style="display:flex;gap:10px;"><div class="form-group" style="flex:1"><label class="form-label">Prazo</label><input class="form-input" id="tk-date" type="date"></div><div class="form-group" style="flex:1"><label class="form-label">Prioridade</label><select class="form-input" id="tk-priority"><option value="high">🔴 Alta</option><option value="mid" selected>🟡 Média</option><option value="low">🟢 Baixa</option></select></div></div></div>
+<button class="save-btn" onclick="saveItem()">Salvar</button></div></div>
+<script>
+const STORAGE_KEY='medflow_data';
+function todayStr(){const d=new Date();return d.toISOString().split('T')[0]}
+function tomorrowStr(){const d=new Date();d.setDate(d.getDate()+1);return d.toISOString().split('T')[0]}
+function nDaysStr(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().split('T')[0]}
+let state=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null')||{events:[
+{id:1,title:'Cirurgia LCA – João Pereira',type:'surgery',date:todayStr(),time:'07:30',location:'Bloco 2 – Sala 4',done:false},
+{id:2,title:'Ambulatório de Joelho',type:'consult',date:todayStr(),time:'10:00',location:'Consultório 8',done:false},
+{id:3,title:'Reunião Gestão – Protocolo Cirúrgico',type:'meeting',date:tomorrowStr(),time:'14:00',location:'Sala de Reuniões A',done:false},
+{id:4,title:'Cirurgia Revisão LCP – M. Santos',type:'surgery',date:nDaysStr(2),time:'08:00',location:'Bloco 1 – Sala 2',done:false},
+{id:5,title:'Consulta pré-op. – Ana Lima',type:'consult',date:nDaysStr(3),time:'09:30',location:'Consultório 8',done:false}],
+tasks:[
+{id:1,title:'Assinar laudos pendentes (12)',priority:'high',date:todayStr(),done:false},
+{id:2,title:'Revisar protocolo de reabilitação pós-LCA',priority:'mid',date:tomorrowStr(),done:false},
+{id:3,title:'Responder e-mail da residência',priority:'mid',date:tomorrowStr(),done:false},
+{id:4,title:'Atualizar relatório mensal de produção',priority:'low',date:nDaysStr(5),done:false}]};
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}
+const DAYS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const DAYS_FULL=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const now=new Date();
+let calMonth=now.getMonth(),calYear=now.getFullYear(),selectedDate=todayStr();
+function initHeader(){const h=now.getHours();const g=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';document.querySelector('.greeting').innerHTML=`${g}, <span>Dr.</span>`;document.getElementById('full-date').textContent=`${DAYS_FULL[now.getDay()]}, ${now.getDate()} de ${MONTHS[now.getMonth()]}`;document.getElementById('day-num').textContent=now.getDate();document.getElementById('day-name').textContent=MONTHS[now.getMonth()].slice(0,3).toUpperCase()}
+function buildWeekStrip(){const strip=document.getElementById('week-strip');strip.innerHTML='';for(let i=-1;i<=5;i++){const d=new Date(now);d.setDate(now.getDate()+i);const ds=d.toISOString().split('T')[0];const hasEv=state.events.some(e=>e.date===ds);const div=document.createElement('div');div.className='week-day'+(i===0?' today':'')+(hasEv?' has-event':'');div.innerHTML=`<span class="wd-name">${DAYS[d.getDay()]}</span><span class="wd-num">${d.getDate()}</span>`;div.onclick=()=>{selectedDate=ds;buildCalendar();switchTab('calendar')};strip.appendChild(div)}}
+function typeTag(type){const map={surgery:'tag-surgery',consult:'tag-consult',meeting:'tag-meeting',personal:'tag-personal'};const labels={surgery:'Cirurgia',consult:'Consulta',meeting:'Reunião',personal:'Pessoal'};return`<span class="event-tag ${map[type]}">${labels[type]}</span>`}
+function eventCard(ev,delay=0){const t=ev.time||'--:--';const[h,m]=t.split(':');const hNum=parseInt(h);const ampm=hNum>=12?'PM':'AM';const h12=hNum%12||12;return`<div class="event-card type-${ev.type}" style="animation-delay:${delay}ms" onclick="deleteEvent(${ev.id})"><div class="event-time-block"><div class="event-time">${String(h12).padStart(2,'0')}:${m}</div><div class="event-ampm">${ampm}</div></div><div class="event-divider"></div><div class="event-info"><div class="event-title">${ev.title}</div><div class="event-sub">${typeTag(ev.type)}${ev.location?`<span>· ${ev.location}</span>`:''}</div></div></div>`}
+function taskItem(t,delay=0){const pClass={high:'p-high',mid:'p-mid',low:'p-low'};const pLabel={high:'Alta',mid:'Média',low:'Baixa'};return`<div class="task-item ${t.done?'done':''}" style="animation-delay:${delay}ms"><div class="task-check ${t.done?'done':''}" onclick="toggleTask(${t.id})"></div><div class="task-body"><div class="task-title">${t.title}</div><div class="task-meta"><span class="priority-dot ${pClass[t.priority]}"></span><span>Prioridade ${pLabel[t.priority]}</span>${t.date?`<span>· ${formatDate(t.date)}</span>`:''}</div></div></div>`}
+function formatDate(ds){const d=new Date(ds+'T00:00:00');if(ds===todayStr())return'Hoje';if(ds===tomorrowStr())return'Amanhã';return`${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}`}
+function renderHome(){const today=todayStr();const upcoming=state.events.filter(e=>e.date>=today).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,4);const pendingTasks=state.tasks.filter(t=>!t.done).slice(0,4);const hEv=document.getElementById('home-events');hEv.innerHTML=upcoming.length?upcoming.map((e,i)=>eventCard(e,i*60)).join(''):'<div class="empty-state"><span class="emoji">🎉</span>Nenhum compromisso próximo</div>';const hTk=document.getElementById('home-tasks');hTk.innerHTML=pendingTasks.length?pendingTasks.map((t,i)=>taskItem(t,i*60)).join(''):'<div class="empty-state"><span class="emoji">✅</span>Todas as tarefas concluídas!</div>';document.getElementById('stat-today').textContent=state.events.filter(e=>e.date===today).length;const weekEnd=nDaysStr(7);document.getElementById('stat-week').textContent=state.events.filter(e=>e.date>=today&&e.date<=weekEnd).length;document.getElementById('stat-tasks').textContent=state.tasks.filter(t=>!t.done).length}
+function renderAgenda(){const today=todayStr();const sorted=state.events.filter(e=>e.date>=today).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));const cont=document.getElementById('all-events');if(!sorted.length){cont.innerHTML='<div class="empty-state"><span class="emoji">📅</span>Nenhum compromisso agendado</div>';return}let html='';let lastDate='';sorted.forEach((e,i)=>{if(e.date!==lastDate){html+=`<div style="padding:${i===0?'0':'12px'} 0 8px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">${formatDate(e.date)}</div>`;lastDate=e.date}html+=eventCard(e,i*40)});cont.innerHTML=html}
+function renderTasks(){const all=[...state.tasks].sort((a,b)=>({high:0,mid:1,low:2}[a.priority]-{high:0,mid:1,low:2}[b.priority]));document.getElementById('all-tasks').innerHTML=all.length?all.map((t,i)=>taskItem(t,i*40)).join(''):'<div class="empty-state"><span class="emoji">✅</span>Sem tarefas!</div>'}
+function buildCalendar(){document.getElementById('month-title').textContent=`${MONTHS[calMonth]} ${calYear}`;const grid=document.getElementById('cal-grid');grid.innerHTML='';['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].forEach(d=>{const el=document.createElement('div');el.className='cal-dname';el.textContent=d;grid.appendChild(el)});const first=new Date(calYear,calMonth,1);const last=new Date(calYear,calMonth+1,0);const startDay=first.getDay();for(let i=0;i<startDay;i++){const prev=new Date(calYear,calMonth,-startDay+i+1);const el=document.createElement('div');el.className='cal-day other-month';el.textContent=prev.getDate();grid.appendChild(el)}for(let d=1;d<=last.getDate();d++){const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const isToday=ds===todayStr();const hasEv=state.events.some(e=>e.date===ds);const el=document.createElement('div');el.className='cal-day'+(isToday?' today':'')+(hasEv?' has-ev':'');if(ds===selectedDate&&!isToday)el.style.border='1px solid var(--accent)';el.textContent=d;el.onclick=()=>{selectedDate=ds;buildCalendar();renderDayEvents()};grid.appendChild(el)}renderDayEvents()}
+function renderDayEvents(){const evs=state.events.filter(e=>e.date===selectedDate).sort((a,b)=>a.time.localeCompare(b.time));const d=new Date(selectedDate+'T00:00:00');document.getElementById('selected-day-label').textContent=`${DAYS_FULL[d.getDay()]}, ${d.getDate()} de ${MONTHS[d.getMonth()]}`;document.getElementById('day-events').innerHTML=evs.length?evs.map((e,i)=>eventCard(e,i*50)).join(''):'<div class="empty-state"><span class="emoji">🗓️</span>Nenhum compromisso neste dia</div>'}
+function changeMonth(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++}if(calMonth<0){calMonth=11;calYear--}buildCalendar()}
+let currentTab='home';
+function switchTab(tab){['home','agenda','calendar','tasks'].forEach(t=>{document.getElementById(`view-${t}`).classList.toggle('active',t===tab);const nav=document.getElementById(`nav-${t}`);if(nav)nav.classList.toggle('active',t===tab)});currentTab=tab;if(tab==='home')renderHome();if(tab==='agenda')renderAgenda();if(tab==='calendar')buildCalendar();if(tab==='tasks')renderTasks()}
+let modalMode='event',selectedType='surgery';
+function openModal(){document.getElementById('modal').classList.add('open');const d=new Date();document.getElementById('ev-date').value=todayStr();document.getElementById('tk-date').value=todayStr();document.getElementById('ev-time').value=`${String(d.getHours()).padStart(2,'0')}:00`}
+function closeModalOnBg(e){if(e.target.id==='modal')closeModal()}
+function closeModal(){document.getElementById('modal').classList.remove('open');document.getElementById('ev-title').value='';document.getElementById('ev-location').value='';document.getElementById('tk-title').value=''}
+function setModalMode(mode){modalMode=mode;document.getElementById('event-fields').style.display=mode==='event'?'':'none';document.getElementById('task-fields').style.display=mode==='task'?'':'none';const me=document.getElementById('mode-event');const mt=document.getElementById('mode-task');if(mode==='event'){me.style.cssText='flex:1;padding:10px;border-radius:10px;border:1px solid var(--accent);background:rgba(79,142,247,0.15);color:var(--accent);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;';mt.style.cssText='flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;'}else{mt.style.cssText='flex:1;padding:10px;border-radius:10px;border:1px solid var(--accent);background:rgba(79,142,247,0.15);color:var(--accent);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;';me.style.cssText='flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;'}}
+function selectType(type){selectedType=type;['surgery','consult','meeting','personal'].forEach(t=>{document.getElementById(`t-${t}`).className=t===type?`type-btn sel-${t}`:'type-btn'})}
+function saveItem(){if(modalMode==='event'){const title=document.getElementById('ev-title').value.trim();if(!title){document.getElementById('ev-title').focus();return}state.events.push({id:Date.now(),title,type:selectedType,date:document.getElementById('ev-date').value,time:document.getElementById('ev-time').value,location:document.getElementById('ev-location').value.trim(),done:false})}else{const title=document.getElementById('tk-title').value.trim();if(!title){document.getElementById('tk-title').focus();return}state.tasks.push({id:Date.now(),title,priority:document.getElementById('tk-priority').value,date:document.getElementById('tk-date').value,done:false})}save();closeModal();switchTab(currentTab);buildWeekStrip()}
+function toggleTask(id){const t=state.tasks.find(t=>t.id===id);if(t){t.done=!t.done;save();switchTab(currentTab)}}
+function deleteEvent(id){if(confirm('Remover este compromisso?')){state.events=state.events.filter(e=>e.id!==id);save();switchTab(currentTab);buildWeekStrip()}}
+initHeader();buildWeekStrip();renderHome();
+</script></body></html>
+
